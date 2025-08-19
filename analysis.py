@@ -1,81 +1,39 @@
 # analysis.py
-# Interactive Data Analysis with Marimo
-# Author: 23ds3000034@ds.study.iitm.ac.in
-#
-# Demonstrates variable dependencies, widgets, and dynamic markdown in Marimo.
+# Author: Shivam
+# Email: 23ds3000034@ds.study.iitm.ac.in
+# This Marimo notebook demonstrates interactive data analysis with dependencies
 
-import marimo
+import marimo as mo
 
-__generated_with__ = "0.1.0"
-app = marimo.App()
+# Cell 1: Import libraries and create synthetic dataset
+# Data flow: This dataset will be used by later cells for analysis
+import numpy as np
+import pandas as pd
 
-# ------------------------------
-# Cell 1: Import libraries
-# ------------------------------
-@app.cell
-def __():
-    import numpy as np
-    import pandas as pd
-    import matplotlib.pyplot as plt
-    return np, pd, plt
+x = np.linspace(0, 10, 100)
+y = 2 * x + np.random.normal(0, 1, 100)  # Linear relation with noise
+data = pd.DataFrame({"x": x, "y": y})
 
-# ------------------------------
-# Cell 2: Generate synthetic dataset
-# ------------------------------
-@app.cell
-def __(np, pd):
-    x = np.linspace(0, 10, 100)
-    base_slope = 2.0
-    y = base_slope * x + np.random.normal(0, 2, size=x.shape[0])
-    data = pd.DataFrame({"x": x, "y": y})
-    data.head()
-    return base_slope, data, x, y
+# Cell 2: Create an interactive slider
+# Data flow: The slider value will be used in the regression visualization
+slider = mo.ui.slider(1, 10, label="Select sample size")
 
-# ------------------------------
-# Cell 3: Interactive slider
-# ✅ FIXED: Must display the widget explicitly
-# ------------------------------
-@app.cell
-def __():
-    import marimo as mo
-    slope_slider = mo.ui.slider(0.5, 5.0, step=0.5, value=2.0, label="Select slope")
-    slope_slider  # displaying widget
-    return slope_slider,
+# Cell 3: Dynamic subset of data based on slider
+# Data flow: Depends on slider and dataset from Cell 1
+sample = data.sample(slider.value)
 
-# ------------------------------
-# Cell 4: Dependent values (line with chosen slope)
-# ------------------------------
-@app.cell
-def __(x, slope_slider, np):
-    slope = slope_slider.value
-    y_new = slope * x
-    (slope, y_new)  # returns recalculated slope line
-    return slope, y_new
+# Cell 4: Display dynamic markdown output
+# Data flow: Updates whenever slider value changes
+mo.md(f"### Current sample size: {slider.value} \n\nShowing {slider.value} points 🟢")
 
-# ------------------------------
-# Cell 5: Visualization
-# ------------------------------
-@app.cell
-def __(plt, x, y, y_new, slope):
-    fig, ax = plt.subplots()
-    ax.scatter(x, y, alpha=0.5, label="Original Data")
-    ax.plot(x, y_new, color="red", label=f"Fitted line (slope={slope:.2f})")
-    ax.legend()
-    ax.set_xlabel("X values")
-    ax.set_ylabel("Y values")
-    ax.set_title("Interactive Slope Fitting")
-    fig
-    return fig,
+# Cell 5: Plotting relationship between variables
+# Data flow: Depends on sample created in Cell 3
+import matplotlib.pyplot as plt
 
-# ------------------------------
-# Cell 6: Dynamic Markdown
-# ✅ responds to slider changes
-# ------------------------------
-@app.cell
-def __(slope):
-    import marimo as mo
-    mo.md(f"### Current slope selected: **{slope:.2f}**")
-    return
-
-if __name__ == "__main__":
-    app.run()
+fig, ax = plt.subplots()
+ax.scatter(sample["x"], sample["y"], color="blue", alpha=0.7, label="Sampled Data")
+ax.set_xlabel("X variable")
+ax.set_ylabel("Y variable")
+ax.set_title("Interactive Relationship between X and Y")
+ax.legend()
+mo.mpl(fig)
