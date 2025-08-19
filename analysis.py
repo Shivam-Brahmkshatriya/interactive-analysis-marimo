@@ -14,13 +14,15 @@ x = np.linspace(0, 10, 100)
 y = 2 * x + np.random.normal(0, 1, 100)  # Linear relation with noise
 data = pd.DataFrame({"x": x, "y": y})
 
-# Cell 2: Create an interactive slider
+# Cell 2: Create an interactive slider (must return it to render!)
 # Data flow: The slider value will be used in the regression visualization
-slider = mo.ui.slider(1, 10, label="Select sample size")
+slider = mo.ui.slider(1, 50, label="Select sample size")
+slider
 
 # Cell 3: Dynamic subset of data based on slider
 # Data flow: Depends on slider and dataset from Cell 1
 sample = data.sample(slider.value)
+sample.head()
 
 # Cell 4: Display dynamic markdown output
 # Data flow: Updates whenever slider value changes
